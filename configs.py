@@ -5,7 +5,7 @@
 def mongodb_url(
   usename:str,password:str,
   uri:str=None,
-  query:dict[str,str]=None
+  query:dict=None
 ):
   QUERY = query if query else {
     "retryWrites": "true",
