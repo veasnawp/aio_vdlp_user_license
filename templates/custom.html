@@ -1,0 +1,28 @@
+{% extends './index.html' %}
+{% block title %}
+  {% if title %}
+    <title>{{title}}</title>
+  {% else %}
+    <title>Dashboard</title>
+  {% endif %}
+{% endblock title %}
+
+{% block content %}
+  {% if body_container %}
+    <div id="container">{{body_container}}</div>
+  {% endif %}
+{% endblock content %}
+
+{% block script %}
+  {% if google_api_js %}
+    <script src='https://apis.google.com/js/api.js' async defer></script>
+  {% endif %}
+  {% if scripts %}
+    {{scripts}}
+  {% endif %}
+  {% if script_src %}
+    <script src='{{script_src}}' async defer></script>
+    {% else %}
+    <script src="{{ url_for('static', filename='main.js') }}" async defer></script>
+  {% endif %}
+{% endblock script %}

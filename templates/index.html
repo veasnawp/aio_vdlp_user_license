@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <!-- <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.ico') }}" /> -->
+  <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  {% block title %}{% endblock title %}
+</head>
+<body>
+  <script>
+    electron = {};
+  </script>
+  <div id="root">
+    {% block content %}{% endblock content %}
+  </div>
+  <div style="display: none;">
+  </div>
+  <noscript>
+    const localhost = (pathname="") => `${window.location.origin + pathname}`;
+
+    const blog = window.document.getElementById("blog-posts");
+    blog.innerHTML = localhost();
+  </noscript>
+  {% if machineId %}
+  <script>
+    window && window.localStorage.setItem("machineId", "{{machineId}}")
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+  <script src='https://apis.google.com/js/api.js' async defer></script>
+  {% endif %}
+  {% block script %}{% endblock script %}
+</body>
+</html>
