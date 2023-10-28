@@ -1,11 +1,11 @@
-# from os import system
-from typing import Optional
+# # from os import system
+# from typing import Optional
 
 
 def mongodb_url(
   usename:str,password:str,
-  uri:Optional[str]=None,
-  query:Optional[dict[str,str]]=None
+  uri:str=None,
+  query:dict[str,str]=None
 ):
   QUERY = query if query else {
     "retryWrites": "true",
