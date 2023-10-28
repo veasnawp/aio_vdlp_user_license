@@ -31,7 +31,7 @@ MachineID = "2D5BE66F-6DA9-434E-A0AC-518722E39A8E"
 domain = 'https://veasnapythonusers.blogspot.com'
 
 
-def mainAssets(id:str, type_ = "posts") -> dict[str,any]:
+def mainAssets(id:str, type_:str = "posts") -> dict[str,any]:
 
     url = f'{domain}/feeds/{type_}/default/{id}?alt=json'
     r = _execute_request(url)
