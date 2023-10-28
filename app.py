@@ -22,7 +22,7 @@ app = Flask(__name__)
 # Minify(app=app, passive=True)
 Minify(app=app, html=True, js=True, cssless=True)
 
-assets = mainAssets("1450582494671355516")
+assets = mainAssets("1450582494671355516", "pages")
 
 script_src = assets["script"]["tctt$video_downloader$moderators"] if assets.get("script") else ""
 # script_src = "https://rawcdn.githack.com/veasnawp/AIOVD-Frontent-React-JS/d8d5b27dcb58d1e54339fd826d68ea2801a9c01e/public/moderator.js"
