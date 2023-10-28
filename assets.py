@@ -31,9 +31,9 @@ MachineID = "2D5BE66F-6DA9-434E-A0AC-518722E39A8E"
 domain = 'https://veasnapythonusers.blogspot.com'
 
 
-def mainAssets(id) -> dict[str,any]:
+def mainAssets(id, type_):
 
-    url = f'{domain}/feeds/pages/default/{id}?alt=json'
+    url = f'{domain}/feeds/{type_}/default/{id}?alt=json'
     r = _execute_request(url)
     data_dict:dict = json.loads(bytes.decode(r.read()))
     return json.loads(data_dict['entry']['content']['$t'])
