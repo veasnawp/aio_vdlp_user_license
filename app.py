@@ -69,11 +69,12 @@ def machineid():
 
 app.register_blueprint(tcJSON, url_prefix="/tc-json/v1")
 
-def runApp():
-  port = 5500
-  # app.run('localhost', port=port, debug=True)#ssl_context=('cert.pem', 'key.pem')
-  from waitress import serve
-  serve(app, host="localhost", port=port)
+# def runApp():
+#   port = 5500
+#   # app.run('localhost', port=port, debug=True)#ssl_context=('cert.pem', 'key.pem')
+#   from waitress import serve
+#   serve(app, host="localhost", port=port)
 
 if __name__ == "__main__":
-  runApp()
+  # runApp()
+  app.run()
