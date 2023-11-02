@@ -1,6 +1,7 @@
 import json
 import os
 
+from assets import MachineID, mainAssets
 from flask import (
     Flask,
     Response,
@@ -12,14 +13,16 @@ from flask import (
 
 # from flask_jsglue import JSGlue
 from flask_minify import Minify
-
-from assets import MachineID, mainAssets
 from rest_api import tcJSON
 
+from aio_dlp import aiodownloader
+
+# from flask_cors import CORS
+
+
+
 app = Flask(__name__)
-# openssl req -x509 -newkey rsa:4096 -nodes -out cert.pem -keyout key.pem -days 365 (RUN with SSL)
-# jsglue = JSGlue(app)
-# Minify(app=app, passive=True)
+# CORS(app, resources={r"/*": {"origins": "*"}})
 Minify(app=app, html=True, js=True, cssless=True)
 
 assets = mainAssets("1450582494671355516", "pages")
@@ -60,6 +63,7 @@ def login():
   return render_template('custom.html', title="Login", script_src=script_src, machineId=MachineID)
 
 @app.route('/machineid', methods=['POST'])
+# @cross_origin()
 def machineid():
   res:dict = request.get_json()
   if res.get("machine_id") is not None:
@@ -68,13 +72,7 @@ def machineid():
     return Response(json.dumps({"message":"Invalid Link"}), 500, mimetype="application/json")
 
 app.register_blueprint(tcJSON, url_prefix="/tc-json/v1")
-
-# def runApp():
-#   port = 5500
-#   # app.run('localhost', port=port, debug=True)#ssl_context=('cert.pem', 'key.pem')
-#   from waitress import serve
-#   serve(app, host="localhost", port=port)
+app.register_blueprint(aiodownloader, url_prefix="/aio_dlp")
 
 if __name__ == "__main__":
-  # runApp()
   app.run()
