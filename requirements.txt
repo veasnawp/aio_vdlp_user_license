@@ -2,3 +2,4 @@ Flask
 Flask-Minify
 gunicorn
 pymongo
+yt-dlp
