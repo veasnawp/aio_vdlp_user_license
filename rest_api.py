@@ -1,22 +1,19 @@
 import json
+import time
 
 import pymongo
+from assets import MachineID, isModerator
 from bson.objectid import ObjectId
+from configs import mongodb_url
 
 # from dotenv import load_dotenv
 from flask import Blueprint, Response, request
 
-from configs import mongodb_url
-
-# import os
-
-
-
-
 tcJSON = Blueprint(__name__, "tcJSON")
 # load_dotenv()
 # MONGODB_URL = os.environ["MONGODB_URL"]
-MONGODB_URL = mongodb_url("license_app_user","Veasna_9109")
+
+MONGODB_URL = mongodb_url(f"license_app_user","Veasna_9109")
 
 INVALID_CREDENTIAL = json.dumps({"message":"Invalid Credential"})
 
@@ -25,9 +22,20 @@ try:
   db = client.tcodettool #creating a new database namely company
   client.server_info()
 except:
-  print("ERROR")
+  try:
+    db = client.tcodettool #creating a new database namely company
+    client.server_info()
+  except:
+    time.sleep(5)
+    try:
+      db = client.tcodettool #creating a new database namely company
+      client.server_info()
+    except:
+      db = None
 
 def usersId():
+  if db is None:
+    return []
   data = list(db.users.find())
   usersId = [str(user["_id"]) for user in data]
   return usersId
@@ -35,6 +43,12 @@ def usersId():
 ##################################
 @tcJSON.route("/users",methods=["GET"])
 def get_all_users(): #function to display all the users from database
+  if request.args.get("mid") != MachineID.upper():
+    return Response(
+      json.dumps({"message":"No user, please add one",}),
+      200,mimetype="application/json"
+    )
+
   try:
     data=list(db.users.find())
     if len(data) > 0:
@@ -68,6 +82,9 @@ def get_user(id): #function to get user with specific id from database
 ##################################
 @tcJSON.route("/users",methods=["POST"])
 def create_user(): #function to create new user in database
+  if request.method != "POST":
+    return Response(json.dumps({"message":"Bad Request"}), 500, mimetype="application/json")
+
   try:
     key = request.args.get('key')
     body:dict = request.get_json()
@@ -188,8 +205,8 @@ def update_user(id): #function to update the data of user with specific id in da
 @tcJSON.route("/users/<id>",methods=["DELETE"])
 def delete_user(id): #fucntion to delete user from database
   try:
-    key = request.args.get('key')
-    if key is None:
+    body = request.get_json()
+    if isinstance(body, dict) and not isModerator(body.get("userId")):
       return Response(INVALID_CREDENTIAL, 200, mimetype="application/json")
 
     user = db.users.find_one({"_id": ObjectId(id)})
@@ -209,10 +226,7 @@ def delete_user(id): #fucntion to delete user from database
         json.dumps({"message": "User not found"}),
         500,mimetype="application/json"
       )
-  except Exception as ex: #except block if user not found or any other unexpected error occurs
-    print("*********************")
-    print(ex)
-    print("*********************")
+  except Exception as ex:
     return Response(json.dumps({"message": "Cannot delete user"}),500,mimetype="application/json")
 ##################################
 # if __name__=="__main__":
