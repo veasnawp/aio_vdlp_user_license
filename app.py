@@ -116,11 +116,5 @@ def fetch():
 app.register_blueprint(tcJSON, url_prefix="/tc-json/v1")
 app.register_blueprint(aiodownloader, url_prefix="/aio_dlp")
 
-def runApp():
-  port = 49006
-  from waitress import serve
-  serve(app, host="localhost", port=port)
-
 if __name__ == "__main__":
-  # app.run()
-  runApp()
+  app.run()
