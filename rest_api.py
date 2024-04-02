@@ -5,6 +5,7 @@ import pymongo
 from assets import MachineID, isModerator
 from bson.objectid import ObjectId
 from configs import mongodb_url
+from dotenv import load_dotenv
 
 # from dotenv import load_dotenv
 from flask import Blueprint, Response, request
@@ -12,8 +13,9 @@ from flask import Blueprint, Response, request
 tcJSON = Blueprint(__name__, "tcJSON")
 # load_dotenv()
 # MONGODB_URL = os.environ["MONGODB_URL"]
-
-MONGODB_URL = mongodb_url(f"license_app_user","Veasna_9109")
+username = os.environ.get("USERNAME")
+password = os.environ.get("PASSWORD")
+MONGODB_URL = mongodb_url(username,password)
 
 INVALID_CREDENTIAL = json.dumps({"message":"Invalid Credential"})
 
