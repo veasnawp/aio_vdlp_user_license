@@ -1,6 +1,6 @@
 import json
 from urllib.error import URLError
-
+from dotenv import load_dotenv
 # from typing import Literal
 from urllib.request import Request, urlopen
 
@@ -84,7 +84,7 @@ def isOnline():
       return False
 
 MachineID = "2D5BE66F-6DA9-434E-A0AC-518722E39A8E"
-domain = 'https://veasnapythonusers.blogspot.com'
+domain = os.environ.get("DOMAIN")
 
 def mainAssets(id, type_):
 
