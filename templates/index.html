@@ -9,26 +9,42 @@
   {% block title %}{% endblock title %}
 </head>
 <body>
-  <script>
-    electron = {};
-  </script>
   <div id="root">
     {% block content %}{% endblock content %}
   </div>
   <div style="display: none;">
   </div>
-  <noscript>
+  <!-- <noscript>
     const localhost = (pathname="") => `${window.location.origin + pathname}`;
 
     const blog = window.document.getElementById("blog-posts");
     blog.innerHTML = localhost();
-  </noscript>
+  </noscript> -->
+  <!-- <script>
+    electron = {
+      on: () => {},
+    };
+  </script> -->
   {% if machineId %}
   <script>
-    window && window.localStorage.setItem("machineId", "{{machineId}}")
+    window && window.localStorage.setItem("machineId", "{{machineId}}");
+  </script>
+  <script>
+    async function getDataJs() {
+      let res = await fetch('/main_js');
+      let dataJs = await res.json();
+      // console.log(dataJs);
+      let mainJs = dataJs.main ?? "./static/main.js";
+      const script = document.createElement("script");
+      script.src = mainJs;
+      script.async = true;
+
+      const body = document.body;
+      body.appendChild(script);
+    };
+    getDataJs();
   </script>
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
-  <script src='https://apis.google.com/js/api.js' async defer></script>
   {% endif %}
   {% block script %}{% endblock script %}
 </body>
