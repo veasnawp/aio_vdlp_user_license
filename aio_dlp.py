@@ -1,9 +1,20 @@
 import json
+from datetime import datetime
+from urllib.parse import quote
 
 from flask import Blueprint, Response, request
 from yt_dlp import YoutubeDL
 from yt_dlp.utils import format_bytes
 
+
+def dict_to_url_quote(info_dict, url_dl):
+    # update_info_dict = {"info_dict": {**info_dict}}
+    update_info_dict = {"info_dict": {**info_dict}}
+    url_dl = url_dl + ("&download_with_info_dict=%s" % quote(json.dumps(update_info_dict)))
+    return { **update_info_dict, "url_dl": url_dl }
+
+def format_bytes_tbr(duration, tbr):
+  return int(duration * tbr * (1024 / 8))
 
 def infoDict(info_dict):
   formats = info_dict["formats"]
@@ -12,17 +23,17 @@ def infoDict(info_dict):
   audio_only = []
   both = []
 
-  def getfilesize(key):
+  def getfilesize(info):
     filesize = 'N/A'
     filesize_num = 0
-    if(key.get("filesize") is not None):
-      filesize = format_bytes(key["filesize"])
-      filesize_num:int = key["filesize"]
-    elif(key.get("filesize_approx") is not None):
-      filesize = format_bytes(key["filesize_approx"])
-      filesize_num:int = key["filesize_approx"]
-    elif(str(key["protocol"]).__contains__("m3u8") and key.get("tbr") is not None):
-      _filesize = int(info_dict['duration'] * key['tbr'] * (1024 / 8))
+    if(info.get("filesize") is not None):
+      filesize = format_bytes(info["filesize"])
+      filesize_num:int = info["filesize"]
+    elif(info.get("filesize_approx") is not None):
+      filesize = format_bytes(info["filesize_approx"])
+      filesize_num:int = info["filesize_approx"]
+    elif(str(info["protocol"]).__contains__("m3u8") and info.get("tbr") is not None):
+      _filesize = format_bytes_tbr(info_dict['duration'], info['tbr'])
       filesize = format_bytes(_filesize)
       filesize_num = _filesize
 
@@ -52,12 +63,10 @@ def infoDict(info_dict):
           # print("video only: ", getValues)
           video_only.append(getValues)
       if(isVcode):
-        if(key["vcodec"] == "none" and not str(key["protocol"]).__contains__("m3u8")):
-          # print("audio only: ", getValues, )
+        if(key["vcodec"] == "none" and not str(key["protocol"]).__contains__("m3u8")) and key.get("resolution") == "audio only":
           audio_only.append(getValues)
       if(isAcode and isVcode):
         if(key["acodec"] != "none" and key["vcodec"] != "none"):
-          # print("both: ", key["url"], key["resolution"])
           if key.get("width") is not None and key.get("width") is not None:
             getValues["width"] = key["width"]
             getValues["height"] = key["height"]
@@ -65,19 +74,22 @@ def infoDict(info_dict):
           else:
             both.append(getValues)
 
+
   deleteInfo_dict_chunks = []
   requested_download = []
 
   key_request_dl = "requested_downloads"
+  requested_formats = info_dict.get("requested_formats")
   if info_dict.get(key_request_dl) is not None:
     for req_dl in info_dict[key_request_dl]:
       for key in req_dl:
-        if isinstance(req_dl[key], list):
+        if type(req_dl[key]) is list:
           for val in req_dl[key]:
-            if type(val) not in (str, list, dict):
+            if type(val) not in (str, list, dict, int, float):
               req_dl[key] = []
+              # print(req_dl[key])
               continue
-
+      # osA.AOS.write("vdo_youtube_extract_not_none.json", json.dumps(info_dict["requested_downloads"], indent=2))
       filesize, filesize_num = getfilesize(req_dl)
       get_request_dl = {
         "title": info_dict["title"],
@@ -91,7 +103,7 @@ def infoDict(info_dict):
       requested_download.append(get_request_dl)
   else:
     request_dl = "requested_formats"
-    if info_dict.get("requested_formats") is not None:
+    if requested_formats is not None:
       for req_fm in info_dict["requested_formats"]:
         if not str(req_fm["resolution"]).__contains__("audio"):
           filesize, filesize_num = getfilesize(req_fm)
@@ -100,6 +112,8 @@ def infoDict(info_dict):
             "ext": req_fm["ext"],
             "filesize": filesize,
             "filesize_num": filesize_num,
+            "width": req_fm["width"],
+            "height": req_fm["height"],
             "resolution": req_fm["resolution"],
             "url": info_dict["webpage_url"],
           }
@@ -123,6 +137,25 @@ def infoDict(info_dict):
 
   info_dict["title"] = info_dict["fulltitle"] = info_dict["title"].replace("|", "—")
 
+  # is_youtube = info_dict["extractor_key"].lower() == "youtube"
+  # if is_youtube and info_dict.get("requested_formats") is not None:
+  #   format_video = requested_formats[0]
+  #   format_audio = requested_formats[1]
+  #   filesize_num = int(info_dict['duration'] * format_video['tbr'] * (1024 / 8)) + format_audio['filesize']
+  #   filesize = format_bytes(filesize_num)
+  #   width = format_video["width"]
+  #   height = format_video["height"]
+  #   requested_download = [{
+  #     "title": info_dict["title"],
+  #     "ext": format_video["video_ext"],
+  #     "filesize": filesize,
+  #     "filesize_num": filesize_num,
+  #     "width": width,
+  #     "height": height,
+  #     "resolution": f"{width}x{height}",
+  #     "url": info_dict["webpage_url"],
+  #   }]
+
   final_info_dict = {
     "info_dict": info_dict,
     "video_only": video_only,
@@ -130,8 +163,96 @@ def infoDict(info_dict):
     "both": both,
     "requested_download": requested_download,
   }
-
+  # osA.AOS.write("vdo_youtube_extract_not_none.json", json.dumps(final_info_dict, indent=2))
+  # AOS.write("video-final-formats-%s.json"%info_dict["extractor_key"].lower(), json.dumps(final_info_dict, indent=2))
   return final_info_dict
+
+def extract_node_yt_dlp(
+  url, only_url_dl=False, yt_opts={"quiet": True}
+) -> dict[str,any]:
+  with YoutubeDL(yt_opts) as tdl:
+    info_dict = tdl.extract_info(url, False)
+    video_info = info_dict.copy()
+    has_generic = video_info.get("url") is not None
+    url_dl = info_dict["original_url"]
+
+    formats = video_info.get("formats",[{}])
+    extractor_key = video_info.get("extractor_key","").lower()
+    if has_generic:
+      info_dict["sd"] = video_info["url"]
+      info_dict["hd"] = video_info["url"]
+      url_dl = video_info["url"]
+    else:
+      if extractor_key == "youtube":
+        info_dict["original_url"] = video_info["webpage_url"]
+        formats_url_dl = [
+          f_info for f_info in formats
+          if (not f_info.get("manifest_url")
+            and isinstance(f_info.get("height"), int) and f_info.get("height") >= 360 and f_info.get("acodec") != "none" and f_info.get("vcodec") != "none"
+          )
+        ]
+        len_url_dl = len(formats_url_dl)
+        if len_url_dl >= 2:
+          info_dl = formats_url_dl[len_url_dl - 1]
+          width, height = info_dl.get("width",0), info_dl.get("height",0)
+          info_dict["sd"] = formats_url_dl[len_url_dl - 2].get("url")
+          info_dict["hd"] = info_dl.get("url")
+          info_dict["width"] = width
+          info_dict["height"] = height
+          info_dict["resolution"] = f"{width}x{height}"
+        elif len_url_dl == 1:
+          info_dl = formats_url_dl[0]
+          width, height = info_dl.get("width",0), info_dl.get("height",0)
+          info_dict["sd"] = info_dl.get("url")
+          info_dict["hd"] = info_dl.get("url")
+          info_dict["width"] = info_dl.get("width",0)
+          info_dict["height"] = info_dl.get("height",0)
+          info_dict["resolution"] = f"{width}x{height}"
+        else:
+          info_dict["sd"] = video_info["original_url"]
+          info_dict["hd"] = video_info["original_url"]
+      elif extractor_key == "facebook":
+        for info in formats:
+          if isinstance(info_dict.get("hd"), str) and isinstance(info_dict.get("sd"), str):
+            break
+          if info.get("format_id") == "hd":
+            info_dict["hd"] = info.get("url")
+            url_dl = info_dict["hd"]
+          elif info.get("format_id") == "sd":
+            info_dict["sd"] = info.get("url")
+      elif extractor_key == "tiktok":
+        if len(formats) > 0:
+          info_dict["dl_with_watermark"] = formats[0].get("url")
+
+    timestamp = info_dict.get("timestamp") or info_dict.get("release_timestamp")
+    if timestamp is not None and isinstance(timestamp, int):
+      info_dict["release_timestamp"] = timestamp
+      info_dict["timestamp"] = timestamp
+      info_dict["upload_date"] = datetime.fromtimestamp(timestamp).__str__()
+
+
+    info_dict["url"] = info_dict["original_url"]
+    info_dict = infoDict(info_dict)
+    video_info = info_dict["info_dict"]
+    info_dict["info_dict"]["requested_download"] = [{
+      "title": video_info.get("title"),
+      "width": video_info.get("width", 0),
+      "height": video_info.get("height", 0),
+      "resolution": video_info.get("resolution"),
+      "url": video_info.get("original_url"),
+    }]
+    info_dict = {
+      **info_dict["info_dict"],
+      # "formats": formats,
+      "video_only": info_dict["video_only"],
+      "audio_only": info_dict["audio_only"],
+      "both": info_dict["both"],
+    }
+
+  if only_url_dl is True:
+    return dict_to_url_quote(info_dict, url_dl)
+
+  return info_dict
 
 
 def aio_downloader(url, options):
@@ -143,14 +264,12 @@ def aio_downloader(url, options):
   #   # 'outtmpl': outtmpl,
   #   # **yt_opts_logger
   # }
-  yt_opts = {}
+  yt_opts = { "quiet": True }
   if isinstance(options, dict):
     for k, v in options.items():
       yt_opts[k] = v
+  info_dict = extract_node_yt_dlp(url, yt_opts=yt_opts)
 
-  with YoutubeDL(yt_opts) as ydl:
-    info_dict = ydl.extract_info(url, False)
-    info_dict = infoDict(info_dict)
   return info_dict
 
 
