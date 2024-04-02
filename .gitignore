@@ -38,3 +38,5 @@ webpack.config.js
 # dotenv environment variables file
 .env
 __pycache__
+__make_exe.py
+app_fastapi.py
