@@ -102,6 +102,9 @@ def waitingfor():
   except:
     return Response(json.dumps({"message":"Invalid Link"}), 500, mimetype="application/json")
 
+@app.errorhandler(404)
+def own_404_page(error):
+  return jsonify({"error": str(error)})
 
 @app.route('/request', methods=['POST'])
 def fetch():
