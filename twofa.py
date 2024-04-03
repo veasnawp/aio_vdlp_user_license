@@ -17,7 +17,7 @@ twofa = Blueprint(__name__, "twofa")
 def home():
   res = request.get_json()
   if res.get("key") is None:
-    return Response(json.dumps({"message":"Invalid Key"}), 500, mimetype="application/json")
+    return Response(json.dumps({"message":"Invalid Key"}), 200, mimetype="application/json")
 
   try:
     secret_key = res["key"]
