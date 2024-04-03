@@ -22,7 +22,8 @@ def home():
   try:
     secret_key = res["key"]
     code = pyotp.TOTP(re.sub(r'\s+','',secret_key))
-    time.sleep(0.1)
+    delay = float(res["sleep"]) if res.get("delay") is not None else 0.5
+    time.sleep(delay)
     return jsonify({"result": code.now()})
   except:
     return Response(json.dumps({"message":"Invalid Key"}), 500, mimetype="application/json")
