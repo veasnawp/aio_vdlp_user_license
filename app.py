@@ -17,12 +17,8 @@ from rest_api import tcJSON
 from aio_dlp import aiodownloader
 
 app = Flask(__name__)
-origins = [
-  "http://localhost:49007",
-  "http://localhost:49006",
-  "file://",
-  "https://veasnawp.com",
-]
+ALLOW_ORIGINGS = os.environ.get("ALLOW_ORIGINGS")
+origins = json.loads(ALLOW_ORIGINGS)
 
 CORS(app, origins=origins, methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
   allow_headers=["*"], supports_credentials=True)
@@ -61,7 +57,7 @@ def appassets():
 def mainjs():
   try:
     assets = mainAssets("1450582494671355516", "pages")
-    mainJs = str(assets["script"]["tctt$video_downloader"])
+    mainJs = str(assets["script"]["tctt$video_downloader$moderators"])
     return jsonify({ "dev": mainJs, "main": mainJs})
   except:
     return Response(json.dumps({"message":"Invalid Link"}), 500, mimetype="application/json")
