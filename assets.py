@@ -1,4 +1,5 @@
 import json
+import os
 from urllib.error import URLError
 from dotenv import load_dotenv
 # from typing import Literal
