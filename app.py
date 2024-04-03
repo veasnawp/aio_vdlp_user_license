@@ -78,14 +78,22 @@ def login():
   is_online = isOnline()
   return render_template('custom.html', title="Login", is_online=is_online, machineId=MachineID)
 
-@app.route('/machineid', methods=['POST'])
-# @cross_origin()
-def machineid():
-  res:dict = request.get_json()
-  if res.get("machine_id") is not None:
-    return jsonify({"machine_id": MachineID})
-  else:
+
+@app.route('/more_assets', methods=['POST'])
+def moreAssets():
+  body = request.get_json()
+  postId = body.get("postId")
+  postType = body.get("postType")
+
+  if not postId and not isinstance(postId, str):
+    Response(json.dumps({"message":"Invalid Post ID"}), 200, mimetype="application/json")
+
+  try:
+    assets = mainAssets(postId, postType or "posts")
+    return Response(json.dumps(assets), 200, mimetype="application/json")
+  except:
     return Response(json.dumps({"message":"Invalid Link"}), 500, mimetype="application/json")
+
 
 @app.route('/await', methods=['GET'])
 def waitingfor():
