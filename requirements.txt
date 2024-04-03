@@ -3,4 +3,3 @@ Flask-Minify
 Flask-Cors
 pymongo
 yt-dlp
-dotenv
