@@ -6,7 +6,6 @@ import pymongo
 from assets import MachineID, isModerator
 from bson.objectid import ObjectId
 from configs import mongodb_url
-from dotenv import load_dotenv
 
 # from dotenv import load_dotenv
 from flask import Blueprint, Response, request
