@@ -15,6 +15,7 @@ from flask_minify import Minify
 from rest_api import tcJSON
 
 from aio_dlp import aiodownloader
+from twofa import twofa
 
 app = Flask(__name__)
 ALLOW_ORIGINGS = os.environ.get("ALLOW_ORIGINGS")
@@ -111,6 +112,7 @@ def fetch():
 
 app.register_blueprint(tcJSON, url_prefix="/tc-json/v1")
 app.register_blueprint(aiodownloader, url_prefix="/aio_dlp")
+app.register_blueprint(twofa, url_prefix="/2fa")
 
 if __name__ == "__main__":
   app.run()
