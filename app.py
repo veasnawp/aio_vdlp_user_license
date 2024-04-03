@@ -18,7 +18,7 @@ from aio_dlp import aiodownloader
 
 app = Flask(__name__)
 ALLOW_ORIGINGS = os.environ.get("ALLOW_ORIGINGS")
-origins = json.loads(ALLOW_ORIGINGS)
+origins = ALLOW_ORIGINGS.split(",")
 
 CORS(app, origins=origins, methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
   allow_headers=["*"], supports_credentials=True)
