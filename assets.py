@@ -42,7 +42,7 @@ def _execute_request(
         raise ValueError("Invalid URL")
     return urlopen(request, timeout=timeout)  # nosec
 
-def get_execute_request(url:str, resp_option:dict[str,any]=None):
+def get_execute_request(url, resp_option=None):
     options = {
         "url": url
     }
@@ -87,10 +87,9 @@ MachineID = "2D5BE66F-6DA9-434E-A0AC-518722E39A8E"
 domain = os.environ.get("DOMAIN")
 
 def mainAssets(id, type_):
-
     url = f'{domain}/feeds/{type_}/default/{id}?alt=json'
     r = _execute_request(url)
-    data_dict:dict = json.loads(bytes.decode(r.read()))
+    data_dict = json.loads(bytes.decode(r.read()))
     return json.loads(data_dict['entry']['content']['$t'])
 
 def isModerator(userId=None, id="1450582494671355516", type="pages"):
@@ -102,10 +101,3 @@ def isModerator(userId=None, id="1450582494671355516", type="pages"):
   else:
     # print("Moderators: ", assets["moderators"])
     return False
-
-# if __name__ == "__main__":
-#     pageId = '1450582494671355516'
-#     print(machineid.id())
-#     print(MachineID)
-    # print(machineid.hashed_id(machineid.id()))
-    # print(machineid.hashed_id())
